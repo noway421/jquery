@@ -17,8 +17,7 @@ app.configure(function () {
 	// app.use(express.logger());
 	app.set("json spaces", 2);
 
-	app.set("port",
-		Number(process.env.PORT || 8000));
+	app.set("port", Number(process.env.PORT || 8000));
 	app.set("host", null);
 
 	app.use(express.bodyParser());
@@ -37,12 +36,13 @@ app.configure(function () {
 });
 
 function loadRoutes(path) {
-	var list = fs.readdirSync(path), i;
+	var list = fs.readdirSync(path), curPath, i;
 	for (i = 0; i < list.length; i++) {
-		if (fs.statSync(path + "/" + list[i]).isDirectory()) {
-			loadRoutes(path + "/" + list[i]);
+		curPath = path + "/" + list[i];
+		if (fs.statSync(curPath).isDirectory()) {
+			loadRoutes(curPath);
 		} else if (/\.route\.js$/.exec(list[i])) {
-			require(path + "/" + list[i]);
+			require(curPath);
 		}
 	}
 }
