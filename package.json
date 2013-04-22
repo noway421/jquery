@@ -32,9 +32,9 @@
 		"grunt": "0.4.1",
 		"gzip-js": "0.3.1",
 		"testswarm": "0.2.2",
-    "express": "3.x",
-    "ejs": "0.8.x",
-    "qs": "0.5.x"
+		"express": "3.x",
+		"ejs": "0.8.x",
+		"qs": "0.5.x"
 	},
 	"keywords": []
 }
