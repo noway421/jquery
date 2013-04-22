@@ -93,6 +93,13 @@ module.exports = function( grunt ) {
 				options: {
 					jshintrc: "test/.jshintrc"
 				}
+			},
+			tests_server: {
+				src: [ "tests-server.js","test/data/*.route.js",
+					"test/data/{core,event,support}/*.route.js" ],
+				options: {
+					jshintrc: ".jshintrc"
+				}
 			}
 		},
 

@@ -1,0 +1,14 @@
+<div id="post">
+<% for (var i in post) { %>
+  <% if (post.hasOwnProperty(i)) { %>
+    <b id='<%= i %>'><%= post[i] %></b>
+  <% } %>
+<% } %>
+</div>
+<div id="get">
+<% for (var i in get) { %>
+  <% if (get.hasOwnProperty(i)) { %>
+    <b id='<%= i %>'><%= get[i] %></b>
+  <% } %>
+<% } %>
+</div>
