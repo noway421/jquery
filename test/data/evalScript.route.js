@@ -1,9 +1,10 @@
 "use strict";
 
-var app = module.parent.app;
-
-app.all("/test/data/evalScript.php", function (req, res) {
-	var m = req.route.method.toUpperCase();
-	res.send("ok('" + m + "' === 'GET', 'request method is "  + m + "');");
-});
+module.exports = function (req, res, done) {
+	var m = req.method.toUpperCase();
+	res.setHeader("Content-Type", "text/plain");
+	res.statusCode = 200;
+	res.end("ok('" + m + "' === 'GET', 'request method is "  + m + "');");
+	done();
+};
 //5

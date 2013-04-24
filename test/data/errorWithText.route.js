@@ -1,9 +1,9 @@
 "use strict";
 
-var app = module.parent.app;
-
-app.all("/test/data/errorWithText.php", function (req, res) {
-	res.status(400);
-	res.send("plain text message");
-});
+module.exports = function (req, res, done) {
+	res.setHeader("Content-Type", "text/plain");
+	res.statusCode = 400;
+	res.end("plain text message");
+	done();
+};
 //5

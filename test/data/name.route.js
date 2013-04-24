@@ -1,35 +1,43 @@
 "use strict";
 
-var app = module.parent.app;
+var connect = require("connect");
+var utils = connect.utils;
+var querystring = require("querystring");
+var url = require("url");
 
-app.all("/test/data/name.php", function (req, res) {
-	var wait = req.request.wait || 0;
+module.exports = function (req, res, done) {
+	connect.bodyParser()(req, res, function () {
+		req.query = querystring.parse(url.parse(req.url).query);
+		req.request = utils.merge(req.query, req.body);
+		var wait = req.query.wait || 0;
 
-	wait *= 1000;
+		wait *= 1000;
 
-	setTimeout(function () {
-		var xml = req.request.xml, name = req.request.name, result;
-		if (xml) {
-			res.set("Content-type", "text/xml");
-			result = (xml === "5-2") ? "3" : "?";
+		setTimeout(function () {
+			var xml = req.query.xml, name = req.query.name, result;
+			res.statusCode = 200;
+			if (xml) {
+				res.setHeader("Content-Type", "text/xml");
+				result = (xml === "5-2") ? "3" : "?";
 
-			res.send("<math><calculation>" + xml + "</calculation><result>" + result + "</result></math>");
-			return;
-		}
-		if (name === "foo") {
-			res.send("bar");
-			return;
-		} else if (name === "peter") {
-			res.send("pan");
-			return;
-		}
+				res.end("<math><calculation>" + xml + "</calculation><result>" + result + "</result></math>");
+				done();
+				return;
+			}
+			if (name === "foo") {
+				res.end("bar");
+				done();
+				return;
+			} else if (name === "peter") {
+				res.end("pan");
+				done();
+				return;
+			}
 
-		res.send("ERROR <script type=\"text/javascript\">ok( true, 'name.php executed' );</script>");
-	}, wait);
-});
-//4
+			res.end("ERROR <script type=\"text/javascript\">ok( true, 'name.php executed' );</script>");
+			done();
+		}, wait);
+	});
+};
 
-app.post("/test/data/name.html", function(req, res) {
-	res.sendfile(__dirname + "/name.html");
-});
 //4

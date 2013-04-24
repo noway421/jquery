@@ -1,13 +1,13 @@
 "use strict";
 
-var app = module.parent.app;
-
-app.all(/^\/test\/data\/atom\+xml\.php$/, function (req, res) {
-	res.set("Content-Type", "atom+xml");
-	res.send(
+module.exports = function (req, res, done) {
+	res.setHeader("Content-Type", "atom+xml");
+	res.statusCode = 200;
+	res.end(
 		"<root>\n" +
 		"  <element />\n" +
 		"</root>\n"
 	);
-});
+	done();
+};
 //5

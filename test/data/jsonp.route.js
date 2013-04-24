@@ -1,21 +1,32 @@
 "use strict";
 
-var app = module.parent.app;
+var connect = require("connect");
+var utils = connect.utils;
+var querystring = require("querystring");
+var url = require("url");
 
-app.all("/test/data/jsonp.php*", function (req, res) {
-	var clbk = req.request.callback, tmp, jsonObj;
+module.exports = function (req, res, done) {
+	connect.bodyParser()(req, res, function () {
+		req.query = querystring.parse(url.parse(req.url).query);
+		req.request = utils.merge(req.query, req.body);
 
-	if (!clbk) {
-		tmp = req.originalUrl.split("/");
-		clbk = tmp[tmp.length - 1].split("?")[0];
-	}
+		var clbk = req.request.callback, tmp, jsonObj;
 
-	if (req.request.json) {
-		jsonObj = [ {name: "John", age: 21}, {name: "Peter", age: 25 } ];
-	} else {
-		jsonObj = { data: {lang: "en", length: 25} };
-	}
+		if (!clbk) {
+			tmp = req.url.split("/");
+			clbk = tmp[tmp.length - 1].split("?")[0];
+		}
 
-	res.send(clbk + "(" + JSON.stringify(jsonObj) + ")");
-});
+		if (req.request.json) {
+			jsonObj = [ {name: "John", age: 21}, {name: "Peter", age: 25 } ];
+		} else {
+			jsonObj = { data: {lang: "en", length: 25} };
+		}
+
+		res.statusCode = 200;
+		res.end(clbk + "(" + JSON.stringify(jsonObj) + ")");
+
+		done();
+	});
+};
 //5

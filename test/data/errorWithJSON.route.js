@@ -1,11 +1,9 @@
 "use strict";
 
-var app = module.parent.app;
-
-app.all("/test/data/errorWithJSON.php", function (req, res) {
-	res.set("Content-Type", "application/json");
-	res.status(400);
-	res.send("{ \"code\": 40, \"message\": \"Bad Request\" }");
-	//res.send({ code: 40, message: "Bad Request" });
-});
+module.exports = function (req, res, done) {
+	res.setHeader("Content-Type", "application/json");
+	res.statusCode = 400;
+	res.end("{ \"code\": 40, \"message\": \"Bad Request\" }");
+	done();
+};
 //5

@@ -1,13 +1,14 @@
 "use strict";
 
-var app = module.parent.app;
+var querystring = require("querystring");
+var url = require("url");
 
-//!!! FIXME !!!
+module.exports = function (req, res, done) {
+	req.query = querystring.parse(url.parse(req.url).query);
+	var status = req.query.status, text = req.query.text;
 
-app.all("/test/data/statusText.php", function (req, res) {
-	var status = req.query.status;//, text = req.query.text;
-
-	res.status(status); // text not used
-	res.send(null);
-});
-//2
+	res.writeHead(status, text);
+	res.end(null);
+	done();
+};
+//5

@@ -1,19 +1,23 @@
 "use strict";
 
-var app = module.parent.app;
+var connect = require("connect");
 var qs = require("qs");
 
-app.all("/test/data/echoData.php", function (req, res) {
-	var post = req.body;
+module.exports = function (req, res, done) {
+	connect.bodyParser()(req, res, function () {
+		var post = req.body;
 
-	res.send(r(qs.stringify(post)));
-});
-
+		res.setHeader("Content-Type", "text/plain");
+		res.statusCode = 200;
+		res.end(r(qs.stringify(post)));
+		done();
+	});
+};
 function r (str) {
 	return str
 		.replace(/\[/g, "%5B")
 		.replace(/\]/g, "%5D")
-		.replace(/=\&/g, "&")
-		.replace(/=$/g, "");
+		.replace(/\=\&/g, "")
+		.replace(/\=$/g, "");
 }
 //4

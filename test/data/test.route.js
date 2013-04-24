@@ -1,15 +1,15 @@
 "use strict";
 
-var app = module.parent.app;
+var fs  = require("fs");
+var ejs = require("ejs");
 
-
-app.all("/test/data/test.php", function (req, res) {
+module.exports = function (req, res, done) {
 	var rand = Math.floor(Date.now()/1000) + "" + Math.floor(Math.random() * 32767);
-	res.render(__dirname + "/test.view.ejs", { rand: rand });
-});
+	fs.readFile(__dirname + "/test.view.ejs", { encoding: "utf8" }, function (err, data) {
+		res.statusCode = 200;
+		res.setHeader("Content-Type", "text/html");
+		res.end(ejs.render(data, { rand: rand }));
+		done();
+	});
+};
 //5
-
-app.post("/test/data/test.js", function(req, res) {
-	res.sendfile(__dirname + "/test.js");
-});
-//4

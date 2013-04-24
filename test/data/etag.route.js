@@ -1,26 +1,33 @@
 "use strict";
 
-var app = module.parent.app;
 var crypto = require("crypto");
 
-app.all("/test/data/etag.php", function (req, res) {
+var querystring = require("querystring");
+var url = require("url");
+
+module.exports = function (req, res, done) {
+	req.query = querystring.parse(url.parse(req.url).query);
+
 	var
-		ts = req.request.ts,
+		ts = req.query.ts,
 		etag = crypto.createHash("md5").update(ts, "utf8").digest("hex"),
-		ifNoneMatch = req.get("If-None-Match") || false;
+		ifNoneMatch = req.headers["if-none-match"] || false;
 
 	if (ifNoneMatch === etag) {
-		res.status(304);
-		res.send(null);
+		res.statusCode = 304;
+		res.end(null);
+		done();
 		return;
 	}
 
-	res.set("Etag", etag);
+	res.setHeader("Etag", etag);
+	res.statusCode = 200;
 
 	if (ifNoneMatch) {
-		res.send("OK:" + etag);
+		res.end("OK:" + etag);
 	} else {
-		res.send("FAIL");
+		res.end("FAIL");
 	}
-});
+	done();
+};
 //5

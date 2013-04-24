@@ -1,24 +1,29 @@
 "use strict";
 
-var app = module.parent.app;
+var querystring = require("querystring");
+var url = require("url");
 
-app.all("/test/data/if_modified_since.php", function (req, res) {
+module.exports = function (req, res, done) {
+	req.query = querystring.parse(url.parse(req.url).query);
+
 	var
-		ts = req.request.ts,
-		ifModifiedSince = req.get("If-Modified-Since") || false;
+		ts = req.query.ts,
+		ifModifiedSince = req.headers["if-modified-since"] || false;
 
 	if (ifModifiedSince === ts) {
-		res.status(304);
-		res.send(null);
+		res.statusCode = 304;
+		res.end(null);
+		done();
 		return;
 	}
-
-	res.set("Last-Modified", ts);
+	res.setHeader("Last-Modified", ts);
+	res.statusCode = 200;
 
 	if (ifModifiedSince) {
-		res.send("OK:" + ts);
+		res.end("OK:" + ts);
 	} else {
-		res.send("FAIL");
+		res.end("FAIL");
 	}
-});
+	done();
+};
 //5

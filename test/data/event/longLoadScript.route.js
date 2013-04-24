@@ -1,15 +1,19 @@
 "use strict";
 
-var app = module.parent.app;
+var querystring = require("querystring");
+var url = require("url");
 
-app.all("/test/data/event/longLoadScript.php", function (req, res) {
-	var sleep = req.request.sleep || 0;
+module.exports = function (req, res, done) {
+	req.query = querystring.parse(url.parse(req.url).query);
+
+	var sleep = req.query.sleep || 0;
 
 	sleep *= 1000;
 
 	setTimeout(function () {
-		res.set("Content-type", "text/javascript");
-		res.send(null);
+		res.writeHead(200, {"Content-Type": "text/javascript"});
+		res.end(null);
+		done();
 	}, sleep);
-});
+};
 //5

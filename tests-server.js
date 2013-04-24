@@ -1,60 +1,89 @@
 "use strict";
 
-var express  = module.express = require("express");
-var app      = module.app     = express();
-var fs       = require("fs");
+var connect  = require("connect");
+var path     = require("path");
+var url      = require("url");
 
-if (!fs.existsSync(__dirname + "/test/qunit/qunit/qunit.js")) {
-	console.error("Qunit not found. Run `grunt` at first.");
-	process.exit(1);
-}
+var send  = require("send");
+var utils = connect.utils;
+var parse = utils.parseUrl;
 
-app.configure(function () {
-	app.set("view engine", "ejs");
-	app.engine(".html", require("ejs").__express);
 
-	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-	// app.use(express.logger());
-	app.set("json spaces", 2);
+var SCRIPT_EXT = ".php";
+var ROUTE_EXT = ".route.js";
+var PORT = 8000;
 
-	app.set("port", Number(process.env.PORT || 8000));
-	app.set("host", null);
 
-	app.use(express.bodyParser());
+var app = connect();
 
-	app.use(function (req, res, next) {
-		req.request = req.query;
-		for (var i in req.body) {
-			if (req.body.hasOwnProperty(i)) {
-				if (typeof req.request[i] === "undefined") {
-					req.request[i] = req.body[i];
+app.use(function (req, res, next) { // routes
+	req.path = url.parse(req.url).pathname;
+	if (req.path.indexOf(SCRIPT_EXT) === -1) { next(); return; }
+
+	// some crazy apache-like routing
+	var
+		extIndex = req.path.indexOf(SCRIPT_EXT) + SCRIPT_EXT.length,
+		scriptPath = req.path.substring(0, extIndex),
+		routePath = scriptPath.replace(SCRIPT_EXT, ROUTE_EXT),
+		routeDir = path.join(__dirname, routePath),
+		route;
+
+	try {
+		route = require(routeDir);
+		route(req, res, function () {
+			// unloading module
+			var name = require.resolve(routeDir), chname, i;
+			if (!require.cache[name]) { return; }
+			for (i in require.cache[name].children) {
+				if (require.cache[name].children.hasOwnProperty(i)) {
+					chname = require.resolve(require.cache[name].children[i].id);
+					delete require.cache[chname];
 				}
 			}
+			delete require.cache[name];
+		});
+	} catch (e) {
+		if (e.code === "MODULE_NOT_FOUND") {
+			next();
+			return;
 		}
-		next();
-	});
+		console.log("Eror from route", routePath, ": ", e);
+	}
 });
 
-function loadRoutes(path) {
-	var list = fs.readdirSync(path), curPath, i;
-	for (i = 0; i < list.length; i++) {
-		curPath = path + "/" + list[i];
-		if (fs.statSync(curPath).isDirectory()) {
-			loadRoutes(curPath);
-		} else if (/\.route\.js$/.exec(list[i])) {
-			require(curPath);
-		}
+app.use(function (req, res, next) { // copypast from connectjs
+	var path = parse(req).pathname, pause = utils.pause(req);
+
+	function resume() {
+		next();
+		pause.resume();
 	}
-}
 
-loadRoutes(__dirname + "/test");
+	function directory() {
+		var pathname = url.parse(req.originalUrl).pathname;
+		res.statusCode = 301;
+		res.setHeader("Location", pathname + "/");
+		res.end("Redirecting to " + utils.escape(pathname) + "/");
+	}
+
+	function error(err) {
+		if (404 === err.status) { return resume(); }
+		next(err);
+	}
+
+	send(req, path)
+		.maxage(0)
+		.root(__dirname)
+		.index("index.html")
+		.hidden(false)
+		.on("error", error)
+		.on("directory", directory)
+		.pipe(res);
+
+});
+
+app.use(connect.directory(__dirname));
+app.listen(PORT);
 
 
-app.use(express.static(__dirname));
-app.use(express.directory(__dirname));
-
-
-app.listen(app.get("port"), app.get("host"));
-
-console.log("Server started. Now you can go " +
-	"to http://localhost:" + app.get("port") + "/test/ and run tests.");
+console.log("Routes serving server starts on port " + PORT);

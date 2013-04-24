@@ -1,7 +1,6 @@
 "use strict";
 
-var app = module.parent.app;
-
-app.all("/test/data/core/dont_return.php", function (/* req, res */) {
-});
+module.exports = function (/* req, res, */done) {
+	done();
+};
 //5+

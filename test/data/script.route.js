@@ -1,17 +1,21 @@
 "use strict";
 
-var app = module.parent.app;
+var querystring = require("querystring");
+var url = require("url");
 
-app.all("/test/data/script.php", function (req, res) {
-	var header = req.request.header;
+module.exports = function (req, res, done) {
+	req.query = querystring.parse(url.parse(req.url).query);
+	var header = req.query.header;
 
+	res.statusCode = 200;
 	if (header) {
 		if (header === "ecma") {
-			res.set("Content-type", "application/ecmascript");
+			res.setHeader("Content-Type", "application/ecmascript");
 		} else {
-			res.set("Content-type", "text/javascript");
+			res.setHeader("Content-Type", "text/javascript");
 		}
 	}
-	res.send("ok( true, 'Script executed correctly.' );");
-});
+	res.end("ok( true, 'Script executed correctly.' );");
+	done();
+};
 //5
